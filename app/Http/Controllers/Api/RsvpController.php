@@ -26,10 +26,17 @@ public function index(Undangan $undangan)
             'nomor_telepon' => 'required|string|max:20',
             'email' => 'nullable|email',
             'status' => 'required|in:hadir,tidak_hadir',
-            'pesan' => 'nullable|string'
+            'pesan' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
         ]);
 
         $validated['undangan_id'] = $undangan->id;
+
+        if ($request->hasFile('foto')) {
+            $foto = $request->file('foto');
+            $fotoPath = $foto->store('rsvps', 'public');
+            $validated['foto'] = $fotoPath;
+        }
 
         $rsvp = Rsvp::create($validated);
 
@@ -45,7 +52,13 @@ public function index(Undangan $undangan)
 
         $rsvps = Rsvp::where('undangan_id', $undangan->id)
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($rsvp) {
+                if ($rsvp->foto) {
+                    $rsvp->foto_url = url('storage/' . $rsvp->foto);
+                }
+                return $rsvp;
+            });
 
         return response()->json([
             'message' => 'Data RSVP berhasil diambil',

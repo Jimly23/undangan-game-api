@@ -13,6 +13,7 @@ class Rsvp extends Model
         'email',
         'status',
         'pesan',
+        'foto',
     ];
 
     public function undangan()

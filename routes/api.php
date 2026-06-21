@@ -30,7 +30,7 @@ Route::delete('/undangan/{slug}/guests/{id}', [GuestController::class, 'destroy'
 Route::get('/invitation/{slug}', [UndanganController::class, 'showBySlug']);
 
 Route::middleware(\App\Http\Middleware\VerifyClientToken::class)->group(function() {
-    Route::post('/client/undangan/{undangan}', [UndanganController::class, 'update']);
+    Route::match(['post', 'put'], '/client/undangan/{undangan}', [UndanganController::class, 'update']);
     Route::post('/client/undangan/{slug}/guests', [GuestController::class, 'store']);
     Route::put('/client/undangan/{slug}/guests/{id}', [GuestController::class, 'update']);
     Route::delete('/client/undangan/{slug}/guests/{id}', [GuestController::class, 'destroy']);

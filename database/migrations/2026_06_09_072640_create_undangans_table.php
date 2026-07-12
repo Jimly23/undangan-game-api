@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('slug')->unique();
-            $table->string('tema')->default('aruma-jawa');
+            $table->string('tema')->default('mahara-jawa');
 
             // MEMPELAI WANITA
             $table->text('foto_wanita')->nullable();

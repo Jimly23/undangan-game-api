@@ -134,6 +134,46 @@ class UndanganController extends Controller
             'slug' => 'sometimes|string|unique:undangans,slug,' . $undangan->id,
             'tema' => 'nullable|string',
 
+            'nama_lengkap_wanita' => 'nullable|string',
+            'nama_panggilan_wanita' => 'nullable|string',
+            'nama_ayah_wanita' => 'nullable|string',
+            'nama_ibu_wanita' => 'nullable|string',
+            'alamat_wanita' => 'nullable|string',
+            'instagram_wanita' => 'nullable|string',
+            'whatsapp_wanita' => 'nullable|string',
+
+            'nama_lengkap_pria' => 'nullable|string',
+            'nama_panggilan_pria' => 'nullable|string',
+            'nama_ayah_pria' => 'nullable|string',
+            'nama_ibu_pria' => 'nullable|string',
+            'alamat_pria' => 'nullable|string',
+            'instagram_pria' => 'nullable|string',
+            'whatsapp_pria' => 'nullable|string',
+
+            'alamat_akad' => 'nullable|string',
+            'tanggal_akad' => 'nullable|date',
+            'jam_mulai_akad' => 'nullable|string',
+            'jam_selesai_akad' => 'nullable|string',
+
+            'alamat_resepsi' => 'nullable|string',
+            'tanggal_resepsi' => 'nullable|date',
+            'jam_mulai_resepsi' => 'nullable|string',
+            'jam_selesai_resepsi' => 'nullable|string',
+
+            'link_google_maps' => 'nullable|string',
+            'link_google_maps_resepsi' => 'nullable|string',
+
+            'nomor_rekening_pria' => 'nullable|string',
+            'nama_bank_pria' => 'nullable|string',
+            'atas_nama_pria' => 'nullable|string',
+
+            'nomor_rekening_wanita' => 'nullable|string',
+            'nama_bank_wanita' => 'nullable|string',
+            'atas_nama_wanita' => 'nullable|string',
+
+            'love_stories' => 'nullable',
+            'dresscodes' => 'nullable',
+
             'foto_wanita' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'foto_pria' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
@@ -141,9 +181,32 @@ class UndanganController extends Controller
 
             'qr_code' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
+            'galeri_existing' => 'nullable|array',
             'galeri.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'link_google_maps_resepsi' => 'nullable|string',
         ]);
+
+        if ($request->has('galeri_existing') || $request->hasFile('galeri')) {
+            $gallery = $request->input('galeri_existing', []);
+            
+            // Hapus file lama yang tidak ada di galeri_existing
+            if (!empty($undangan->galeri)) {
+                foreach ($undangan->galeri as $image) {
+                    if (!in_array($image, $gallery)) {
+                        $this->deleteFile($image);
+                    }
+                }
+            }
+
+            // Tambahkan file baru
+            if ($request->hasFile('galeri')) {
+                foreach ($request->file('galeri') as $file) {
+                    $path = $file->store('gallery', 'public');
+                    $gallery[] = $this->getFileUrl($path);
+                }
+            }
+
+            $data['galeri'] = $gallery;
+        }
 
         if ($request->hasFile('foto_wanita')) {
             $this->deleteFile($undangan->foto_wanita);
@@ -169,20 +232,7 @@ class UndanganController extends Controller
             $data['qr_code'] = $this->getFileUrl($path);
         }
 
-        if ($request->hasFile('galeri')) {
-            if (!empty($undangan->galeri)) {
-                foreach ($undangan->galeri as $image) {
-                    $this->deleteFile($image);
-                }
-            }
 
-            $gallery = [];
-            foreach ($request->file('galeri') as $file) {
-                $path = $file->store('gallery', 'public');
-                $gallery[] = $this->getFileUrl($path);
-            }
-            $data['galeri'] = $gallery;
-        }
 
         $undangan->update($data);
 

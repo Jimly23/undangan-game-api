@@ -214,15 +214,33 @@ class UndanganController extends Controller
         ]);
     }
 
-    public function showBySlug($slug)
+    public function showBySlug(Request $request, $slug)
     {
         $undangan = Undangan::withCount('rsvps')
             ->where('slug', $slug)
             ->firstOrFail();
 
+        $guestPass = null;
+        $guestName = trim((string) $request->query('guest', ''));
+        if ($guestName !== '') {
+            $guest = \App\Models\Guest::where('undangan_id', $undangan->id)
+                ->whereRaw('LOWER(TRIM(nama_tamu)) = ?', [mb_strtolower($guestName)])
+                ->first();
+
+            if ($guest) {
+                $guestPass = [
+                    'nama_tamu' => $guest->nama_tamu,
+                    'qr_token' => $guest->qr_token,
+                    'is_checked_in' => (bool) $guest->is_checked_in,
+                    'checked_in_at' => $guest->checked_in_at?->toIso8601String(),
+                ];
+            }
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $undangan
+            'data' => $undangan,
+            'guest_pass' => $guestPass,
         ]);
     }
 

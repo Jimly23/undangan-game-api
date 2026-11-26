@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\UndanganController;
 use App\Http\Controllers\Api\RsvpController;
 use App\Http\Controllers\Api\GuestController;
@@ -12,6 +13,13 @@ use App\Http\Controllers\Api\GuestController;
 | ADMIN
 |--------------------------------------------------------------------------
 */
+
+Route::post('/admin/login', [AdminAuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/admin/me', [AdminAuthController::class, 'me']);
+    Route::post('/admin/logout', [AdminAuthController::class, 'logout']);
+    Route::post('/undangan/{slug}/check-in', [GuestController::class, 'checkIn']);
+});
 
 Route::apiResource('undangan', UndanganController::class);
 
@@ -34,4 +42,5 @@ Route::middleware(\App\Http\Middleware\VerifyClientToken::class)->group(function
     Route::post('/client/undangan/{slug}/guests', [GuestController::class, 'store']);
     Route::put('/client/undangan/{slug}/guests/{id}', [GuestController::class, 'update']);
     Route::delete('/client/undangan/{slug}/guests/{id}', [GuestController::class, 'destroy']);
+    Route::post('/client/undangan/{slug}/check-in', [GuestController::class, 'checkIn']);
 });
